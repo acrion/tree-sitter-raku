@@ -1,0 +1,11 @@
+[[language]]
+name = "raku"
+scope = "source.raku"
+file-types = ["raku", "rakumod", "rakutest", "rakudoc", "nqp", "p6", "pl6", "pm6"]
+shebangs = ["raku", "perl6"]
+comment-token = "#"
+indent = { tab-width = 4, unit = "    " }
+
+[[grammar]]
+name = "raku"
+source = { git = "https://github.com/acrion/tree-sitter-raku", rev = "main" }

@@ -1,6 +1,6 @@
 {
   "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
-  "name": "perl",
+  "name": "raku",
   "word": "_identifier",
   "rules": {
     "source_file": {
@@ -8719,7 +8719,7 @@
     },
     "_identifier": {
       "type": "PATTERN",
-      "value": "[_\\p{XID_Start}][\\p{XID_Continue}]*",
+      "value": "[_\\p{XID_Start}][\\p{XID_Continue}\\-]*",
       "flags": "v"
     },
     "_ident_special": {

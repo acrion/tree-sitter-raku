@@ -85,7 +85,7 @@ const paren_list_of = rule =>
   seq('(', repeat(seq(optional(rule), ',')), optional(rule), ')')
 
 module.exports = grammar({
-  name: 'perl',
+  name: 'raku',
   supertypes: $ => [
     $.primitive,
     // $.variables, // TODO - i don't know why, but these just went crazy

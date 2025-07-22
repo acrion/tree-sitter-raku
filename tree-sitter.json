@@ -1,7 +1,7 @@
 {
   "grammars": [
     {
-      "name": "perl",
+      "name": "raku",
       "camelcase": "Perl",
       "scope": "source.pm",
       "path": ".",
@@ -11,7 +11,7 @@
         "t"
       ],
       "highlights": "queries/highlights.scm",
-      "injection-regex": "(perl|pl)",
+      "injection-regex": "(raku|perl6)",
       "first-line-regex": "#!.*\\bperl\\b"
     }
   ],

@@ -1,117 +1,163 @@
-# tree-sitter-perl-better
+# Tree-sitter for Raku (for Helix)
 
-This is Yet Another perl tree-sitter module.
+This repository provides a [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) parser for the [Raku](https://raku.org/) programming language, specifically adapted for use with the [Helix editor](https://helix-editor.com/).
 
-## Getting Started Developing
+This project is a fork of the excellent [tree-sitter-perl](https://github.com/tree-sitter-perl/tree-sitter-perl) parser. While the changes made in this fork are minor compared to the incredible effort invested in the original `tree-sitter-perl`, they provide a significantly improved syntax highlighting experience for Raku code in Helix.
 
-To get started, install the dependencies for this repo. The only thing you'll need
-installed is node v20 or above (we use more advanced regex features for the unicode
-support).
+The default Tree-sitter parser for Perl is often applied to Raku files in Helix, which can lead to incorrect highlighting. This parser addresses that by making initial Raku-specific syntax adjustments, such as correctly handling hyphens in variable names (e.g., `my $variable-name`).
+
+## Quick Start: Using in Helix
+
+Follow these steps to build the parser and configure Helix to use it for Raku files.
+
+**Prerequisites:**
+*   Node.js (v20 or higher) and npm are installed.
+*   The `tree-sitter` CLI. If you don't have it, you can install it locally for the project with `npm install tree-sitter-cli`.
+
+### 1. Clone and Build the Parser
+
+First, clone this repository to your local machine and generate the parser files.
 
 ```bash
-npm run dev-install
+# Clone the repository
+git clone https://github.com/acrion/tree-sitter-raku.git
+cd tree-sitter-raku
+
+# Generate the parser C code
+npx tree-sitter generate
 ```
 
-That should get you set up with tree-sitter's cli locally. (npm install won't work b/c it
-needs the library to be generated to build the bindings so we can use this repo for node
-bindings).
+### 2. Configure Helix
 
+Next, you need to tell Helix where to find the grammar and its associated query files.
 
-### Generating the Bindings
+1.  **Copy the Query Files:**
+    The query files (`highlights.scm`, `indents.scm`, etc.) determine how Helix uses the parser for syntax highlighting, indentation, and more.
 
-In this project, the generated C source code (stored in the `src` directory) is
-.gitignored. In order to generate it, run
+    ```bash
+    # Create the necessary directory if it doesn't exist
+    mkdir -p ~/.config/helix/runtime/queries/raku
 
+    # Copy the queries from this repository
+    cp -r queries/* ~/.config/helix/runtime/queries/raku/
+    ```
+
+2.  **Add the Grammar to `languages.toml`:**
+    You need to register the new grammar in your Helix language configuration file (`~/.config/helix/languages.toml`). Add the following content to it. If the file doesn't exist, create it.
+
+    ```toml
+    [[language]]
+    name = "raku"
+    scope = "source.raku"
+    file-types = ["raku", "rakumod", "rakutest", "rakudoc", "nqp", "p6", "pl6", "pm6"]
+    shebangs = ["raku", "perl6"]
+    comment-token = "#"
+    indent = { tab-width = 4, unit = "    " }
+
+    [[grammar]]
+    name = "raku"
+    source = { git = "https://github.com/acrion/tree-sitter-raku", rev = "main" }
+    ```
+### 3. Build and Verify in Helix
+
+Finally, have Helix build the grammar and check that everything is configured correctly.
+
+```bash
+# Tell Helix to build any newly configured grammars
+helix --grammar build
+
+# Check the health of your Raku configuration
+helix --health raku
+```
+
+You should see checkmarks (`✓`) for the Tree-sitter parser and its queries, indicating a successful setup.
+
+## Key Changes from Upstream
+
+*   **Language Name:** The grammar has been renamed from `perl` to `raku` throughout the project.
+*   **Raku Syntax:** An initial adaptation was made in `lib/unicode_ranges.js` and `src/grammar.json` to allow hyphens within identifiers, a common feature in Raku.
+*   **Helix Integration:**
+    *   The `queries` for highlighting, indentation, folding, and text objects were copied from the [Helix repository](https://github.com/helix-editor/helix) (specifically the `perl` queries) and adapted for this parser.
+    *   A sample `languages.toml` configuration is provided for easy integration.
+
+## Credits
+
+This project would not be possible without the work of others:
+
+*   **[tree-sitter-perl](https://github.com/tree-sitter-perl/tree-sitter-perl):** The vast majority of the parsing logic comes from this project. Thank you to its maintainers and contributors.
+*   **[Helix Editor](https://github.com/helix-editor/helix):** The language query files (`.scm`) are based on the ones provided by the Helix project for its built-in Perl support.
+
+## For Developers
+
+If you want to contribute to the parser itself, the process is straightforward.
+
+#### Generating the Parser
+After making any changes to the grammar definition in `grammar.js`, you must regenerate the C source code:
 ```bash
 npx tree-sitter generate
 ```
 
-You'll need to do this after any changes to the grammar.
-
-### Running the tests
-
-Tests are stored in the `/test/corpus` directory, as txt files. A little reference on the
-syntax can be found [here](https://tree-sitter.github.io/tree-sitter/creating-parsers#command-test).
-
-You can run the tests with
-
+#### Running Tests
+Tests are located in the `/test/corpus` directory. You can run them using the Tree-sitter CLI:
 ```bash
 npx tree-sitter test
 ```
 
-See the help output (`-h`) for that command for some more details on using the test
-runner.
+---
 
-## Contributing
+## Bonus: Setting Up the Raku Language Server (RakuNavigator) in Helix
 
-If you'd like to contribute, Pull Requests are welcome! The plan is to build the grammar
-from the bottom up, from simple statements with solid code coverage, eventually building
-up to full, complex syntax.
+For a full IDE-like experience, you can complement the Tree-sitter parser with a Language Server. [RakuNavigator](https://github.com/bscan/RakuNavigator) is a great option for Raku. Here is how to set it up for Helix.
 
-You can see a reference of the grammar's DSL [here](https://tree-sitter.github.io/tree-sitter/creating-parsers#the-grammar-dsl). It's fairly straigthforward, and makes for pleasant reading. It is stored in `grammar.js` at the root of this repo.
+### 1. Install RakuNavigator
 
-For subtle points in the grammar implementation, PLEASE leave comments. The extra bytes
-spent on the comments in dev will go a long way in the big picture.
+```bash
+# Choose a directory for third-party projects
+cd /path/to/your/projects
 
-### Supporting Scripts
+# Clone the RakuNavigator repository
+git clone https://github.com/bscan/RakuNavigator.git
+cd RakuNavigator/server
 
-We have a perl script which generates the correct ranges for both the C + JS sides of the
-parser. The dependencies are in the `cpanfile` in the root directory. Not necessary unless
-you are working on unicode identifiers.
+# Install dependencies
+npm install
 
-## Using these bindings
+# Install TypeScript to compile the server
+npm install -g typescript
 
-### Neovim
-
-A version of this parser is now part of the nvim-treesitter plugin! Hurrah!
-
-If you'd like to use a version that has not yet made it into nvim-treesitter, you can install these bindings in neovim by using the following snippet.
-```lua
-local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
-parser_config.perl = {
-  install_info = {
-    url = 'https://github.com/tree-sitter-perl/tree-sitter-perl',
-    revision = 'release',
-    files = { "src/parser.c", "src/scanner.c" },
-  }
-}
+# Compile the server
+tsc
 ```
 
-Then you just `:TSInstall perl`. You'll need to copy the queries in the `queries`
-directory of this repo into a `queries/perl` directory somewhere in your `rtp`
-(`runtimepath`).
+### 2. Configure Helix for the Language Server
 
-See `:h 'rtp'` for more information. Additionally `:echo &rtp` to see your
-current `runtimepath`.
+Now, add the following configuration to your `~/.config/helix/languages.toml` file.
 
-### Emacs
+**Important:** You must replace `/path/to/your/projects` with the actual absolute path where you cloned `RakuNavigator`.
 
-As of [Emacs](https://www.gnu.org/software/emacs/) version 29.1, if you have
-the tree-sitter library installed, the configure script will automatically
-include it in the build.
-
-Once this is done, you can install the Perl bindings
-by executing two Emacs lisp forms:
-
-```Emacs Lisp
-(setq treesit-language-source-alist
-  '((perl . ("https://github.com/tree-sitter-perl/tree-sitter-perl" "release"))))
-(treesit-install-language-grammar 'perl)
+```toml
+[language-server.raku-navigator]
+command = "node"
+args = ["/path/to/your/projects/RakuNavigator/server/out/server.js", "--stdio"]
 ```
 
-Alternatively, you can run the command interactively:
+### 3. Verify the Language Server Setup
+
+Run the Helix health check again for Raku:
+```bash
+helix --health raku
 ```
-M-x treesit-install-language-grammar <RET>
+
+You should now see the `raku-navigator` language server listed with a checkmark.
+
+#### Understanding the `helix --health` Output
+
+When you see the following output:
 ```
-Then answer the prompts accordingly.  Enter `perl` for the language, the
-repository URL is `https://github.com/tree-sitter-perl/tree-sitter-perl`
-and the branch is `release`.
+Configured language servers:
+  ✓ raku-navigator: /usr/bin/node
+```
 
-An Emacs major mode which makes use of these binding ... is yet to be
-written.
-
-
-### In General
-
-You can get the built files off of the `release` branch in this repo. If you have specific
-instructions for a particular editor, PRs are welcome.
+This is what it means:
+*   `✓ raku-navigator:` Helix has successfully read the `[language-server.raku-navigator]` section from your `languages.toml`.
+*   `/usr/bin/node`: This is the resolved path to the `command` you specified. Helix confirms it can find the `node` executable. The actual server logic is in the JavaScript file (`out/server.js`) that you passed as an argument, which `node` will execute to start the Language Server Protocol (LSP) communication.

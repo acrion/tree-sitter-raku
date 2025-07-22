@@ -306,7 +306,7 @@ static bool isidcont(int32_t c) { return c == '_' || is_tsp_id_continue(c); }
 // there's a matching rule in the grammar to catch when it doesn't match a rule
 static bool is_interpolation_escape(int32_t c) { return c < 256 && tsp_strchr("$@-[{\\", c); }
 
-unsigned int tree_sitter_perl_external_scanner_serialize(void *payload, char *buffer) {
+unsigned int tree_sitter_raku_external_scanner_serialize(void *payload, char *buffer) {
   LexerState *state = payload;
   size_t size = 0;
 
@@ -332,7 +332,7 @@ unsigned int tree_sitter_perl_external_scanner_serialize(void *payload, char *bu
   return size;
 }
 
-void tree_sitter_perl_external_scanner_deserialize(void *payload, const char *buffer,
+void tree_sitter_raku_external_scanner_deserialize(void *payload, const char *buffer,
                                                    unsigned int length) {
   LexerState *state = payload;
   size_t size = 0;
@@ -357,7 +357,7 @@ void tree_sitter_perl_external_scanner_deserialize(void *payload, const char *bu
   }
 }
 
-bool tree_sitter_perl_external_scanner_scan(void *payload, TSLexer *lexer,
+bool tree_sitter_raku_external_scanner_scan(void *payload, TSLexer *lexer,
                                             const bool *valid_symbols) {
   LexerState *state = payload;
 
@@ -955,14 +955,14 @@ heredoc_token_handling:
   return false;
 }
 
-void *tree_sitter_perl_external_scanner_create() {
+void *tree_sitter_raku_external_scanner_create() {
   LexerState *state = calloc(1, sizeof(LexerState));
   array_init(&state->quotes);
-  tree_sitter_perl_external_scanner_deserialize(state, NULL, 0);
+  tree_sitter_raku_external_scanner_deserialize(state, NULL, 0);
   return state;
 }
 
-void tree_sitter_perl_external_scanner_destroy(void *payload) {
+void tree_sitter_raku_external_scanner_destroy(void *payload) {
   LexerState *state = payload;
   array_delete(&state->quotes);
   free(state);

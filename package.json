@@ -1,5 +1,5 @@
 {
-  "name": "tree-sitter-perl",
+  "name": "tree-sitter-raku",
   "version": "1.0.0",
   "description": "A tree-sitter parser, for Perl!",
   "main": "bindings/node",
@@ -46,8 +46,8 @@
   ],
   "tree-sitter": [
     {
-      "scope": "source.perl",
-      "injection-regex": "^perl$"
+      "scope": "source.raku",
+      "injection-regex": "^(raku|perl6)$"
     }
   ]
 }
