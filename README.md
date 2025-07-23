@@ -119,13 +119,13 @@ cd /path/to/your/projects
 git clone https://github.com/bscan/RakuNavigator.git
 cd RakuNavigator/server
 
-# Install dependencies
+# Install Node.js dependencies for the server
 npm install
 
-# Install TypeScript to compile the server
+# Install TypeScript to compile the server (if not already installed)
 npm install -g typescript
 
-# Compile the server
+# Compile the server's TypeScript code to JavaScript
 tsc
 ```
 
@@ -133,12 +133,29 @@ tsc
 
 Now, add the following configuration to your `~/.config/helix/languages.toml` file.
 
-**Important:** You must replace `/path/to/your/projects` with the actual absolute path where you cloned `RakuNavigator`.
+Replace `/path/to/your/projects` with the actual absolute path where you cloned `RakuNavigator`. Also, adjust the `includePaths` to point to the directories containing your Raku modules.
 
 ```toml
 [language-server.raku-navigator]
 command = "node"
 args = ["/path/to/your/projects/RakuNavigator/server/out/server.js", "--stdio"]
+
+[language-server.raku-navigator.config.raku]
+# Specifies the path to your Raku executable.
+# "raku" is usually sufficient if it's in your system's PATH.
+rakuPath = "raku"
+
+# This is crucial for the language server to find your custom Raku modules, especially
+# those not installed via `zef` or in standard Raku module directories. It mimics the behavior
+# of `use lib`, telling the language server where to look for `.rakumod` files when resolving
+# `use` directives. Unlike your shell, where Raku implicitly finds modules based on your
+# current directory, the language server often runs with a different working directory.
+# Therefore, explicitly providing these paths ensures it can resolve `use` directives
+# correctly and avoid "Syntax: Could not find ... in ..." errors.
+includePaths = [
+  "/path/to/your/custom/raku/modules"
+]
+logging = true
 ```
 
 ### 3. Verify the Language Server Setup
@@ -160,4 +177,4 @@ Configured language servers:
 
 This is what it means:
 *   `✓ raku-navigator:` Helix has successfully read the `[language-server.raku-navigator]` section from your `languages.toml`.
-*   `/usr/bin/node`: This is the resolved path to the `command` you specified. Helix confirms it can find the `node` executable. The actual server logic is in the JavaScript file (`out/server.js`) that you passed as an argument, which `node` will execute to start the Language Server Protocol (LSP) communication.
+*   `/usr/bin/node`: This is the resolved path to the `command` you specified. Helix confirms it can find the `node` executable. The actual server logic is in the JavaScript file (`out/server.js`) that you passed as an argument, which `node` will execute to start the Language Server Protocol (LSP) communication. The `config.raku` section is then passed internally to the `raku-navigator` server for its own configuration.
